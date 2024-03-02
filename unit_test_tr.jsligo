@@ -1,0 +1,53 @@
+#import "./transport_contract_v1.jsligo" "Tr"
+
+const test_code = (): unit => {
+
+    type order = Tr.Transport_Contract.order;
+    type order_id = Tr.Transport_Contract.order_id;
+    type last_id = Tr.Transport_Contract.last_id;
+    type storage = Tr.Transport_Contract.storage;
+    type result = Tr.Transport_Contract.result;  
+
+    buyer0Addr = Test.nth_bootstrap_account(0);
+    transport0Addr = Test.nth_bootstrap_account(1);
+
+    let ctDeadline : deadline = "2025-01-01t10:10:10Z";
+    let trDeadline : deadline = "2035-01-01t10:10:10Z";
+
+    /** ASSUMING we have parsed the data from the Project Contract thingy, then */
+    let order0 : order = {
+        buyer_address = buyer0Addr,
+        origin : "Delhaize",
+        destination : "La Provencale",
+        contract_deadline : ctDeadline,
+        transport_deadline : trDeadline,
+        winner_address : transport0Addr,
+        winner_price : 20
+    }
+
+    /** Create Contract */
+    /** Assert */
+    /** Participate */
+    /** Assert */
+    /** GetTheOrderData */
+    /** Assert */
+    /** Close Contract */
+    /** Assert */
+
+    let test_map : map<int, order> = Map.empty;
+    Map.add(0, order0, test_map);
+
+    let contr = Test.originate(contract_of(Tr.Transport_Contract), [test_map, 0], 0tez);
+    let p1 : parameter_of Tr.Transport_Contract = CreateContract(order0);
+
+    Test.transfer_exn(contr.addr, p1, 1mutez);
+
+    const final = Map.literal (list([
+        [0,order],
+    ]));
+    let _unit_ = Test.log(Test.get_storage(contr.addr))
+    return (assert (Test.equal(Test.get_storage(contr.addr), [final,1])));
+
+}
+
+const test = test_code();
