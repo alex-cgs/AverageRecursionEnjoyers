@@ -19,15 +19,26 @@ export namespace Project_Contract {
     }
 
     export type contract = {
-        buyer : buyer,
         seller : the_best_seller,
         contract_deadline : deadline;
-        object_deadline : deadline;
+        transport_deadline : deadline;
     }
 
-    export type contract_chain = list<contract>; // What's better list / map ? 
+    export type contract_chain = map<buyer, list<contract>>; // What's better list / map ? 
 
     export type storage = contract_chain;
+    
+    type result = [list<operation>,storage];
+
+    function OpenContract(buyer : buyer, contract_deadline : deadline, transport_deadline : deadline, oldStorage : storage) : result {
+        let new_contract = {
+            seller : the_best_seller(), // Here should be no seller.
+            contract_deadline: contract_deadline,
+            transport_deadline : transport_deadline
+        };
+        
+
+    }
 
     /* Functions: 
         1. OpenContract(buyer: address, location, object, price)
