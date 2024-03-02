@@ -5,17 +5,71 @@ export namespace Transport_Contract {
         origin : string,
         destination : string, 
         contract_deadline : string, 
-        transport_deadline : string
+        transport_deadline : string,
+        winner_address : address,
+        winner_price : nat
     };
+    export type order_id = nat;
+    export type last_id = nat;
 
     // I'm not sure, that we have to create the whole chain of comlpited orders
     // Probably this should be done but Tezos 
-    export type order_chain = list<order>;
+    export type storage = [map<order_id, order>, last_id];
 
-    /* Functions: 
-        CreateContract(origin, destination, ...)
-        CloseContract(buyer : address) : closes the contract befor the deadline
+    export type result = [list<operation>, map<order_id, order>];
+ 
+    // Let's go from bugs to features :)
+    // Here the buyer can enter its own TC, if thye want. (Or this is a "bad access"?)
+    function CreateContract(new_order : order, oldStorage : storage) : [result, nat] {
+        let newID : nat= oldStorage[1] + 1n;
+        let newMap = Map.add(newID, new_order, oldStorage[0]);
+        return [[list([]), newMap], newID];
+    }
 
-    */
+    function CloseContract(buyer_address : address, idOfContract : nat, oldStorage : storage) : result {
+        if (buyer_address != Tezos.get_sender()) {
+            failwith("Access deny");
+        }
+        let newMap = Map.remove(idOfContract, oldStorage[0]);
+        return [list([]), newMap];
+    }
 
+    function GetTheOrderData(idOfContract : nat, storage : storage) : order {
+        let force_access = (key, map) => {
+            return match(Map.find_opt (key, map)) {
+                when(Some(value)): value;
+                when(None): failwith("No order.")
+            };
+        };
+        return force_access(idOfContract, storage[0]);
+    }
+
+    function Participate(participater_address : address, participater_price : nat, idOfOrder : nat, oldStorage : storage) {
+        let force_access = (key, map) => {
+            return match(Map.find_opt (key, map)) {
+                when(Some(value)): value;
+                when(None): failwith("No order.")
+            };
+        };
+        if (!Map.mem(idOfOrder, oldStorage[0])) {
+            failwith("No such order"); // or return false;
+        }
+        if (force_access(idOfOrder, oldStorage[0]).winner_price 
+                    || participater_price < force_access(idOfOrder, oldStorage[0]).winner_price) {
+            let newMap = match(Map.find_opt(idOfOrder, oldStorage[0])) {
+                when(Some(i)): Map.update(idOfOrder, Some({
+                    buyer_address : i.buyer_address, 
+                    origin : i.origin,
+                    destination : i.destination, 
+                    contract_deadline : i.contract_deadline, 
+                    transport_deadline : i.transport_deadline,
+                    winner_address : participater_address,
+                    winner_price : participater_price
+                    }), oldStorage[0]);
+                when(None): failwith("System of a down")
+            };
+            return [list([]), [newMap, oldStorage[1]]];
+        }
+        // Here I should say, that the contract has not been updated.CloseContract
+    }
 }
