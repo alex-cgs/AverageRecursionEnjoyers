@@ -17,10 +17,10 @@ const test_code = (): unit => {
     let trDeadline : deadline = Tezos.get_now();
 
     /** ASSUMING we have parsed the data from the Project Contract thingy, then */
-    let order0 : order = {
+    let orderFromBuyer : order = {
         buyer_address: buyer0Addr,
-        origin : "Delhaize",
-        destination : "La Provencale", 
+        origin : "La Provencale",
+        destination : "Delhaize", 
         contract_deadline : ctDeadline, 
         transport_deadline : trDeadline,
         winner_address : buyer0Addr,
@@ -28,10 +28,10 @@ const test_code = (): unit => {
         order_id : 1
     };
 
-    let order_seller = { 
+    let answerFromSeller = { 
         buyer_address: buyer0Addr,
-        origin : "Delhaize",
-        destination : "La Provencale", 
+        origin : "La Provencale",
+        destination : "Delhaize", 
         contract_deadline : ctDeadline, 
         transport_deadline : trDeadline,
         winner_address : transport0Addr,
@@ -49,17 +49,17 @@ const test_code = (): unit => {
     /** Assert */
 
     let test_map : map<int, order> = Map.empty;
-    Map.add(1, order0, test_map);
+    Map.add(1, orderFromBuyer, test_map);
 
     let contr = Test.originate(contract_of(Tr), [test_map, 0], 0tez);
-    let p1 : parameter_of Tr = CreateContract(order0);
-    let p2 : parameter_of Tr = Participate(order_seller); 
+    let p1 : parameter_of Tr = CreateContract(orderFromBuyer);
+    let p2 : parameter_of Tr = Participate(answerFromSeller); 
 
     Test.transfer_exn(contr.addr, p1, 1mutez);
     Test.transfer_exn(contr.addr, p2, 1mutez);
 
     const final = Map.literal (list([
-        [1,order_seller],
+        [1,answerFromSeller],
     ]));
     let _unit_ = Test.log(Test.get_storage(contr.addr));
     Test.log("Be yourself");
