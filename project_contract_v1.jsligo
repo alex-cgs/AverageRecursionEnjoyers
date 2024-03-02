@@ -1,98 +1,98 @@
 #import "./transport_contract_v1.jsligo" "Tr"
 
-export namespace Project_Contract {
-    export type buyer = { 
-        address : address,
-        location : string,
-        object : string, 
-        price : nat
+
+type buyer = { 
+    address : address,
+    location : string,
+    object : string, 
+    price : nat
+};
+
+type deadline = timestamp;
+
+type the_best_seller = {
+    address : address, 
+    location : string, 
+    object : string, 
+    cost : nat, 
+}
+
+type contract = {
+    buyer : buyer,
+    seller : option<the_best_seller>,
+    contract_deadline : option<deadline>,
+    transport_deadline : option<deadline>,
+    transport_contract : option<Tr.Transport_Contract.order>,
+}
+
+/* Functions: 
+    1. OpenContract(buyer: address, location, object, price)
+    2. Participate(seller: address, location, object, cost) :
+        2.a first check if both objects are the same
+        2.b Create a transport order
+        2.c After closing transport order, get the feedback 
+    3. CloseContrace(buyer: address) : If the buyer wants to close the contract befor the deadline
+    
+*/
+
+type storage = map<address, list<contract>>;
+type result = [list<operation>, storage];
+
+
+@entry
+const openContract = (newBuyer : buyer, s : storage) : result => {
+    let buyerAddress = Tezos.get_sender();
+    if (buyerAddress != newBuyer.address) failwith("User address do no match");
+    let newContract : contract = {
+        buyer : newBuyer,
+        seller : None(),
+        contract_deadline : None(),
+        transport_deadline : None(),
+        transport_contract : None(),
     };
-
-    export type deadline = timestamp;
-
-    export type the_best_seller = {
-        address : address, 
-        location : string, 
-        object : string, 
-        cost : nat, 
-    }
-
-    export type contract = {
-        buyer : buyer,
-        seller : option<the_best_seller>,
-        contract_deadline : option<deadline>,
-        transport_deadline : option<deadline>,
-        transport_contract : option<Tr.Transport_Contract.order>,
-    }
-
-    /* Functions: 
-        1. OpenContract(buyer: address, location, object, price)
-        2. Participate(seller: address, location, object, cost) :
-            2.a first check if both objects are the same
-            2.b Create a transport order
-            2.c After closing transport order, get the feedback 
-        3. CloseContrace(buyer: address) : If the buyer wants to close the contract befor the deadline
-        
-    */
-
-    export type storage = map<address, list<contract>>;
-    export type result = [list<operation>, storage];
-
-
-    @entry
-    export const openContract = (newBuyer : buyer, s : storage) : result => {
-        let buyerAddress = Tezos.get_sender();
-        if (buyerAddress != newBuyer.address) failwith("User address do no match");
-        let newContract : contract = {
-            buyer : newBuyer,
-            seller : None(),
-            contract_deadline : None(),
-            transport_deadline : None(),
-            transport_contract : None(),
-        };
-        let newCollection = match(Map.find_opt(buyerAddress,s)) {
-            when(Some(collection)): list([newContract, ...collection]);
-            when(None()): list([newContract]);
-        };
-        let newStorage = Map.update(buyerAddress,Some(newCollection),s);
-        
-        return [list([]), newStorage];
-    }
+    let newCollection = match(Map.find_opt(buyerAddress,s)) {
+        when(Some(collection)): list([newContract, ...collection]);
+        when(None()): list([newContract]);
+    };
+    let newStorage = Map.update(buyerAddress,Some(newCollection),s);
     
-    const linearSearch = (lst: list<contract>, val: contract) : option<contract> => {
-        if (List.head_opt(lst) == Some(val)) return Some(val);
-        let tail = match(List.tail_opt(lst)) {
-            when(Some(tlst)) : linearSearch(tlst, val);
-            when(None) : None();
-        }
-        return tail
-    }
+    return [list([]), newStorage];
+}
 
-    const replace = (lst: list<contract>, a: contract, b: contract) => {
-        
+const linearSearch = (lst: list<contract>, val: contract) : option<contract> => {
+    if (List.head_opt(lst) == Some(val)) return Some(val);
+    let tail = match(List.tail_opt(lst)) {
+        when(Some(tlst)) : linearSearch(tlst, val);
+        when(None) : None();
     }
-    
-    @entry
-    export const participate = (validation_info : [the_best_seller, contract], s : storage) : result => {
-        let userList = match(Map.find_opt(validation_info[1].buyer.address,s)){
-            when(Some(cool)) : cool;
-            when(None()) : failwith("contract does not exist");
-        }
-        let contr : contract = match(linearSearch(userList, validation_info[1])){
-            when(Some(val)) : val;
-            when(None()) : failwith ("could not find contract.");
-        };
-        let seller = validation_info[0];
-        if (contr.buyer.object != seller.object) failwith("Seller does not provide requested good.");
-        let newContract = {
-            buyer : contr.buyer,
-            seller : Some(seller),
-            contract_deadline : contr.contract_deadline,
-            transport_deadline : contr.transport_deadline,
-            transport_contract : contr.transport_contract,
-        }
-        let newStorage = Map.find_opt(newContract.buyer.address,s)
-        return [list([]), ]
-    }
+    return tail
+}
 
+@entry
+const participate = (validation_info : [the_best_seller, contract], s : storage) : result => {
+    const userList = match(Map.find_opt(validation_info[1].buyer.address,s)){
+        when(Some(cool)) : cool;
+        when(None()) : failwith("contract does not exist");
+    }
+    const contr : contract = match(linearSearch(userList, validation_info[1])){
+        when(Some(val)) : val;
+        when(None()) : failwith ("could not find contract.");
+    };
+    let seller = validation_info[0];
+    if (contr.buyer.object != seller.object) failwith("Seller does not provide requested good.");
+    const newContract = {
+        buyer : contr.buyer,
+        seller : Some(seller),
+        contract_deadline : contr.contract_deadline,
+        transport_deadline : contr.transport_deadline,
+        transport_contract : contr.transport_contract,
+    }
+    const newStorage = match(Map.find_opt(newContract.buyer.address,s)) {
+        when(Some(lst)) : lst;
+        when(None) : failwith("Mistake when updating the contract");
+    }
+    let func = (val: contract) : contract => {if (contr == val) return newContract else return val;};
+    let newnewStorage = List.map(func, newStorage);
+    let newnewnewStorage = Map.update(contr.buyer.address,Some(newnewStorage),s)
+    return [list([]), newnewnewStorage];
 }
