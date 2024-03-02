@@ -1,0 +1,48 @@
+#import "./project_contract_v1.jsligo" "Pr"
+#import "./transport_contract_v1.jsligo" "Tr"
+
+const test_code = (): unit => {
+
+    /** Importing all the types from Project_Contract */
+    type buyer = Pr.Project_Contract.buyer;
+    type deadline = Pr.Project_Contract.deadline;
+    type the_best_seller = Pr.Project_Contract.the_best_seller;
+    type contract = Pr.Project_Contract.contract;
+    type contract_chain = Pr.Project_Contract.contract_chain;
+    type storage = contract_chain;
+    type result = [list<operation>,storage];
+
+    /** Importing from Transport_Contract */
+
+    /** Setting up the addresses of buyer, seller and transport*/
+    let buyer0Addr = Test.nth_bootstrap_account(0);
+    let seller0Addr = Test.nth_bootstrap_account(1);
+
+    /** Creating some deadlines for the contract and the transport*/
+    deadline ctDeadline = "2025-01-01t10:10:10Z";
+    deadline trDeadline = "2035-01-01t10:10:10Z";
+
+    deadline today = Tezos.get_now();
+
+    buyer buyer0 = {
+        address : buyer0Addr,
+        location : "Delhaize",
+        object : "Croissant",
+        price : 3
+    }
+
+    the_best_seller seller0 = {
+        address : seller0Addr,
+        location : "La Provençale",
+        object : "Croissant",
+        cost : 3,
+        contract_deadline : ctDeadline,
+    }
+
+    contract contract0 = {
+        seller : seller0,
+        contract_deadline : ctDeadline,
+        transport_deadline : trDeadline
+    }
+
+}
