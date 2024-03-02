@@ -1,0 +1,50 @@
+#import "./acc.jsligo" "C"
+
+const test_code = (): unit => {
+
+  type command = {
+      origin : address,
+      destination : address,
+      object_name : string,
+      amount : int,
+      cost : int
+  };
+
+  let owner = Test.nth_bootstrap_account(0);
+  let alice = Test.nth_bootstrap_account(1);
+
+  let test_command = {
+    origin : alice,
+    destination : owner,
+    object_name : "horses",
+    amount : 2,
+    cost : 500
+  }
+
+  let test_command2 = {
+    origin : alice,
+    destination : owner,
+    object_name : "pigs",
+    amount : 50,
+    cost : 2000
+  }
+
+  let test_map : map<int, command> = Map.empty;
+  Map.add(0, test_command, test_map);
+
+  let contr = Test.originate(contract_of(C.CommandContract), [test_map, 0], 0tez);
+  let p1 : parameter_of C.CommandContract = AddCommand (test_command);
+  let p2 : parameter_of C.CommandContract = AddCommand (test_command);
+  
+  Test.transfer_exn(contr.addr, p1, 1mutez);
+  Test.transfer_exn(contr.addr, p2, 1mutez);
+
+  const final = Map.literal (list([
+    [0,test_command],
+    [1, test_command]
+  ]));
+  let unit_ = Test.log(Test.get_storage(contr.addr))
+  return (assert (Test.equal(Test.get_storage(contr.addr), [final,1])));
+};
+
+const test = test_code();
