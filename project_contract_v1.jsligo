@@ -1,0 +1,32 @@
+#import "./transport_contract_v1.jsligo" "Tr"
+
+export namespace Project_Contract {
+    export type buyer = { 
+        address : address,
+        location : string,
+        object : string, 
+        price : nat
+    };
+
+    export type deadline = timestamp;
+
+    export type the_best_seller = {
+        address : address, 
+        location : string, 
+        object : string, 
+        cost : nat, 
+        transport_contract : Tr.Transport_Contract.order
+    }
+
+    export type contract = {
+        buyer : buyer,
+        seller : the_best_seller,
+        contract_deadline : deadline;
+        object_deadline : deadline;
+    }
+
+    export type contract_chain = list<contract>; // What's better list / map ? 
+
+    export type storage = contract_chain;
+
+}

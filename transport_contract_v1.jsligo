@@ -1,0 +1,12 @@
+export namespace Transport_Contract {
+
+    export type order = {
+        origin : string,
+        destination : string, 
+        contract_deadline : string, 
+        transport_deadline : string
+    };
+
+    export type order_chain = list<order>;
+
+}
