@@ -7,10 +7,29 @@ export namespace Transport_Contract {
         contract_deadline : string, 
         transport_deadline : string
     };
+    export type order_id = nat;
+    export type last_id = nat;
 
     // I'm not sure, that we have to create the whole chain of comlpited orders
     // Probably this should be done but Tezos 
-    export type order_chain = list<order>;
+    export type storage = [map<order_id, order>, last_id];
+
+    export type result = [list<operation>, map<order_id, order>];
+
+    function CreateContract(new_order : order, oldStorage : storage) : [result, nat] {
+        let newID : nat= oldStorage[1] + 1n;
+        let newMap = Map.add(newID, new_order, oldStorage[0]);
+        return [[list([]), newMap], newID];
+
+    }
+
+    function CloseContract(buyer_address : address, idOfContract : nat, oldStorage : storage) : result {
+        if (buyer_address != Tezos.get_sender()) {
+            failwith("Access deny");
+        }
+        let newMap = Map.remove(idOfContract, oldStorage[0]);
+        return [list([]), newMap];
+    }
 
     /* Functions: 
         CreateContract(origin, destination, ...)
