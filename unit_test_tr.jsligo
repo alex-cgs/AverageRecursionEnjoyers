@@ -10,7 +10,7 @@ const test_code = (): unit => {
     type result = Tr.result;  
     type deadline = timestamp;
 
-    let buyer0Addr = Test.nth_bootstrap_account(0);
+    let buyer0Addr = Tezos.get_sender();
     let transport0Addr = Test.nth_bootstrap_account(1);
 
     let ctDeadline : deadline = Tezos.get_now();
@@ -23,10 +23,21 @@ const test_code = (): unit => {
         destination : "La Provencale", 
         contract_deadline : ctDeadline, 
         transport_deadline : trDeadline,
+        winner_address : buyer0Addr,
+        winner_price : -1,
+        order_id : 1
+    };
+
+    let order_seller = { 
+        buyer_address: buyer0Addr,
+        origin : "Delhaize",
+        destination : "La Provencale", 
+        contract_deadline : ctDeadline, 
+        transport_deadline : trDeadline,
         winner_address : transport0Addr,
         winner_price : 100,
-        order_id : 0 
-    };
+        order_id : 1
+    }
 
     /** Create Contract */
     /** Assert */
@@ -38,17 +49,21 @@ const test_code = (): unit => {
     /** Assert */
 
     let test_map : map<int, order> = Map.empty;
-    Map.add(0, order0, test_map);
+    Map.add(1, order0, test_map);
 
     let contr = Test.originate(contract_of(Tr), [test_map, 0], 0tez);
     let p1 : parameter_of Tr = CreateContract(order0);
+    let p2 : parameter_of Tr = Participate(order_seller); 
 
     Test.transfer_exn(contr.addr, p1, 1mutez);
+    Test.transfer_exn(contr.addr, p2, 1mutez);
 
     const final = Map.literal (list([
-        [0,order0],
+        [1,order_seller],
     ]));
-    let _unit_ = Test.log(Test.get_storage(contr.addr))
+    let _unit_ = Test.log(Test.get_storage(contr.addr));
+    Test.log("Be yourself");
+    Test.log([final, 1]);
     return (assert (Test.equal(Test.get_storage(contr.addr), [final,1])));
 
 }

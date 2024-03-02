@@ -58,6 +58,7 @@ function getTheOrderData(_ : int, oldStorage : storage) : result {
     return [list([]), oldStorage];
 }
 
+@entry 
 function participate(order : order, oldStorage : storage) : result {
     
     if (!Map.mem(order.order_id, oldStorage[0])) {
@@ -65,7 +66,7 @@ function participate(order : order, oldStorage : storage) : result {
     }
     
     let win_pr : int = force_access(order.order_id, oldStorage[0]).winner_price;
-    if (order.winner_price < win_pr) {
+    if (win_pr == -1 || order.winner_price < win_pr) {
         let newMap = match(Map.find_opt(order.order_id, oldStorage[0])) {
             when(Some(i)): Map.update(order.order_id, Some({
                 buyer_address : i.buyer_address, 
