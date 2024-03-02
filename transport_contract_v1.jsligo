@@ -14,14 +14,14 @@ export namespace Transport_Contract {
 
     export type storage = [map<order_id, order>, last_id];
 
-    export type result = [list<operation>, map<order_id, order>];
+    export type result = [list<operation>, [map<order_id, order>, last_id]];
  
     // Let's go from bugs to features :)
     // Here the buyer can enter its own TC, if thye want. (Or this is a "bad access"?)
     function CreateContract(new_order : order, oldStorage : storage) : [result, nat] {
         let newID : nat= oldStorage[1] + 1n;
         let newMap = Map.add(newID, new_order, oldStorage[0]);
-        return [[list([]), newMap], newID];
+        return [list([]), [newMap, newID]];
     }
 
     function CloseContract(buyer_address : address, idOfContract : nat, oldStorage : storage) : result {
@@ -29,7 +29,7 @@ export namespace Transport_Contract {
             failwith("Access deny");
         }
         let newMap = Map.remove(idOfContract, oldStorage[0]);
-        return [list([]), newMap];
+        return [list([]), [newMap, oldStorage[1]]];
     }
 
     function GetTheOrderData(idOfContract : nat, storage : storage) : order {
