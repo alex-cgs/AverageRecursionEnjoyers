@@ -15,8 +15,8 @@ export namespace CommandContract {
     type result = [list<operation>,storage]
 
     @entry function addCommand (action : command, oldStorage : storage) : result {
-        let newID = oldStorage[1] + 1;
-        let newMap = Map.add(newID, action, oldStorage[0])
+        let newID : int = oldStorage[1] + 1;
+        let newMap : map<command_id, command> = Map.add(newID, action, oldStorage[0])
         return [list([]),[newMap, newID]];
     }
 }

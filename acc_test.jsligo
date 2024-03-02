@@ -34,17 +34,17 @@ const test_code = (): unit => {
 
   let contr = Test.originate(contract_of(C.CommandContract), [test_map, 0], 0tez);
   let p1 : parameter_of C.CommandContract = AddCommand (test_command);
-  let p2 : parameter_of C.CommandContract = AddCommand (test_command);
+  let p2 : parameter_of C.CommandContract = AddCommand (test_command2);
   
   Test.transfer_exn(contr.addr, p1, 1mutez);
   Test.transfer_exn(contr.addr, p2, 1mutez);
 
   const final = Map.literal (list([
-    [0,test_command],
-    [1, test_command]
+    [1, test_command],
+    [2, test_command2]
   ]));
-  let unit_ = Test.log(Test.get_storage(contr.addr))
-  return (assert (Test.equal(Test.get_storage(contr.addr), [final,1])));
+  let _unit_ = Test.log(Test.get_storage(contr.addr))
+  return (assert (Test.equal(Test.get_storage(contr.addr), [final,2])));
 };
 
 const test = test_code();
