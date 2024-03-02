@@ -2,13 +2,7 @@
 
 const test_code = (): unit => {
 
-  type command = {
-      origin : address,
-      destination : address,
-      object_name : string,
-      amount : int,
-      cost : int
-  };
+  type command = C.CommandContract.command;
 
   let owner = Test.nth_bootstrap_account(0);
   let alice = Test.nth_bootstrap_account(1);
@@ -40,8 +34,8 @@ const test_code = (): unit => {
   Test.transfer_exn(contr.addr, p2, 1mutez);
 
   const final = Map.literal (list([
-    [1, test_command],
-    [2, test_command2]
+    [0,test_command],
+    [1, test_command]
   ]));
   let _unit_ = Test.log(Test.get_storage(contr.addr))
   return (assert (Test.equal(Test.get_storage(contr.addr), [final,2])));

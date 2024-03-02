@@ -2,12 +2,6 @@
 
 const test_code = (): unit => {
 
-    type order = Tr.Transport_Contract.order;
-    type order_id = Tr.Transport_Contract.order_id;
-    type last_id = Tr.Transport_Contract.last_id;
-    type storage = Tr.Transport_Contract.storage;
-    type result = Tr.Transport_Contract.result;  
-
     buyer0Addr = Test.nth_bootstrap_account(0);
     transport0Addr = Test.nth_bootstrap_account(1);
 

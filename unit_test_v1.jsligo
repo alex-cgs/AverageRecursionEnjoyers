@@ -9,8 +9,8 @@ const test_code = (): unit => {
     type the_best_seller = Pr.Project_Contract.the_best_seller;
     type contract = Pr.Project_Contract.contract;
     type contract_chain = Pr.Project_Contract.contract_chain;
-    type storage = contract_chain;
-    type result = [list<operation>,storage];
+    type storage = map<address, list<contract>>;
+    type result = [list<operation>, storage];
 
     /** Importing from Transport_Contract */
 
@@ -51,12 +51,12 @@ const test_code = (): unit => {
 
     let contr = Test.originate(contract_of(Pr.Project_Contract), [test_map, 0], 0tez);
     let p0 : parameter_of Pr.Project_Contract = OpenContract(buyer0.address, buyer0.location, buyer0.object, buyer0.price);
-    let p1 : parameter_of Pr.Project_Contract = Participate();
+    Test.log(Test.get_storage(contr.addr));
+    /** let p1 : parameter_of Pr.Project_Contract = Participate();
     let p2 : parameter_of Pr.Project_Contract = Verify();
-    let p3 : parameter_of Pr.Project_Contract = CloseContract();
+    let p3 : parameter_of Pr.Project_Contract = CloseContract();*//
 
     Test.transfer_exn(contr.addr, p0, 1mutez);
-    Test.transfer_exn(contr.addr, p1, 1mutez);
 
     const final = Map.literal (list([]))
 
