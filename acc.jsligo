@@ -1,0 +1,24 @@
+export namespace CommandContract {
+    export type command = {
+        origin : address,
+        destination : address,
+        object_name : string,
+        amount : int,
+        cost : int
+    };
+
+    type command_id = int;
+
+    type map_command = [map<command_id, command>,int];
+
+    type storage = map_command;
+    type result = [list<operation>,storage]
+
+    @entry function addCommand (action : command, oldStorage : storage) : result {
+        let newID = oldStorage[1] + 1;
+        let newMap = Map.add(newID, action, oldStorage[0])
+        return [list([]),[newMap, newID]];
+    }
+}
+
+
