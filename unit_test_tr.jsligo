@@ -2,6 +2,7 @@
 
 const test_code = (): unit => {
 
+
     type order = Tr.order;
     type order_id = Tr.order_id;
     type last_id = Tr.last_id;
@@ -17,14 +18,15 @@ const test_code = (): unit => {
 
     /** ASSUMING we have parsed the data from the Project Contract thingy, then */
     let order0 : order = {
-        buyer_address : buyer0Addr,
+        buyer_address: buyer0Addr,
         origin : "Delhaize",
-        destination : "La Provencale",
-        contract_deadline : ctDeadline,
+        destination : "La Provencale", 
+        contract_deadline : ctDeadline, 
         transport_deadline : trDeadline,
         winner_address : transport0Addr,
-        winner_price : 20n
-    }
+        winner_price : 100,
+        order_id : 0 
+    };
 
     /** Create Contract */
     /** Assert */
@@ -35,20 +37,19 @@ const test_code = (): unit => {
     /** Close Contract */
     /** Assert */
 
-    let test_map : storage = Map.empty;
-    test_map[1] = 1;
-    test_map[0] = Map.literal(list(["0", order0]));
+    let test_map : map<int, order> = Map.empty;
+    Map.add(0, order0, test_map);
 
-    let contr = Test.originate(contract_of(Tr), [test_map, 0n], 0tez);
+    let contr = Test.originate(contract_of(Tr), [test_map, 0], 0tez);
     let p1 : parameter_of Tr = CreateContract(order0);
 
     Test.transfer_exn(contr.addr, p1, 1mutez);
 
     const final = Map.literal (list([
-        [0n,order0],
+        [0,order0],
     ]));
     let _unit_ = Test.log(Test.get_storage(contr.addr))
-    return (assert (Test.equal(Test.get_storage(contr.addr), [final,1n])));
+    return (assert (Test.equal(Test.get_storage(contr.addr), [final,1])));
 
 }
 

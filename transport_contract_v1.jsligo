@@ -3,7 +3,7 @@
 export type order = {
     buyer_address: address,
     origin : string,
-    destiintion : string, 
+    destination : string, 
     contract_deadline : timestamp, 
     transport_deadline : timestamp,
     winner_address : address,
