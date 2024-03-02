@@ -54,8 +54,8 @@ export namespace Transport_Contract {
         if (!Map.mem(idOfOrder, oldStorage[0])) {
             failwith("No such order"); // or return false;
         }
-        if (force_access(idOfOrder, oldStorage[0]).winner_price 
-                    || participater_price < force_access(idOfOrder, oldStorage[0]).winner_price) {
+        if (force_access(idOfOrder, oldStorage[0]).winner_price ||
+                    participater_price < force_access(idOfOrder, oldStorage[0]).winner_price) {
             let newMap = match(Map.find_opt(idOfOrder, oldStorage[0])) {
                 when(Some(i)): Map.update(idOfOrder, Some({
                     buyer_address : i.buyer_address, 
