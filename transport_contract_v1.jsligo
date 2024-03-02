@@ -1,12 +1,21 @@
 export namespace Transport_Contract {
 
     export type order = {
+        buyer_address: address,
         origin : string,
         destination : string, 
         contract_deadline : string, 
         transport_deadline : string
     };
 
+    // I'm not sure, that we have to create the whole chain of comlpited orders
+    // Probably this should be done but Tezos 
     export type order_chain = list<order>;
+
+    /* Functions: 
+        CreateContract(origin, destination, ...)
+        CloseContract(buyer : address) : closes the contract befor the deadline
+
+    */
 
 }

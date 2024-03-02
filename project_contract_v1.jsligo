@@ -29,4 +29,14 @@ export namespace Project_Contract {
 
     export type storage = contract_chain;
 
+    /* Functions: 
+        1. OpenContract(buyer: address, location, object, price)
+        2. Participate(seller: address, location, object, cost) :
+            2.a first check if both objects are the same
+            2.b Create a transport order
+            2.c After closing transport order, get the feedback 
+        3. CloseContrace(buyer: address) : If the buyer wants to close the contract befor the deadline
+        
+    */
+
 }
