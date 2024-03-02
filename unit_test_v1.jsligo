@@ -33,16 +33,32 @@ const test_code = (): unit => {
 
     the_best_seller seller0 = {
         address : seller0Addr,
-        location : "La Provençale",
+        location : "La Provencale",
         object : "Croissant",
         cost : 3,
         contract_deadline : ctDeadline,
     }
 
+    /** 
     contract contract0 = {
         seller : seller0,
         contract_deadline : ctDeadline,
         transport_deadline : trDeadline
-    }
+    } */
+
+    let test_map : map<int, contract> = Map.empty;
+    Map.add(0, contract0, test_map);
+
+    let contr = Test.originate(contract_of(Pr.Project_Contract), [test_map, 0], 0tez);
+    let p0 : parameter_of Pr.Project_Contract = OpenContract(buyer0.address, buyer0.location, buyer0.object, buyer0.price);
+    let p1 : parameter_of Pr.Project_Contract = Participate();
+    let p2 : parameter_of Pr.Project_Contract = Verify();
+    let p3 : parameter_of Pr.Project_Contract = CloseContract();
+
+    Test.transfer_exn(contr.addr, p0, 1mutez);
+    Test.transfer_exn(contr.addr, p1, 1mutez);
+
+    const final = Map.literal (list([]))
+
 
 }
