@@ -33,7 +33,7 @@ function createContract(information : order, oldStorage : storage) : result {
     let new_order = {
         buyer_address : Tezos.get_sender(),
         origin : information.origin,
-        destiintion : information.destiintion, 
+        destination : information.destination, 
         contract_deadline : information.contract_deadline, 
         transport_deadline : information.transport_deadline,
         winner_address : Tezos.get_sender(),
@@ -70,7 +70,7 @@ function participate(order : order, oldStorage : storage) : result {
             when(Some(i)): Map.update(order.order_id, Some({
                 buyer_address : i.buyer_address, 
                 origin : i.origin,
-                destiintion : i.destiintion, 
+                destination : i.destination, 
                 contract_deadline : i.contract_deadline, 
                 transport_deadline : i.transport_deadline,
                 winner_address : order.winner_address,
