@@ -19,19 +19,19 @@ const test_code = (): unit => {
     let seller0Addr = Test.nth_bootstrap_account(1);
 
     /** Creating some deadlines for the contract and the transport*/
-    deadline ctDeadline = "2025-01-01t10:10:10Z";
-    deadline trDeadline = "2035-01-01t10:10:10Z";
+    let ctDeadline : deadline = "2025-01-01t10:10:10Z";
+    let trDeadline : deadline = "2035-01-01t10:10:10Z";
 
-    deadline today = Tezos.get_now();
+    let today : deadline = Tezos.get_now();
 
-    buyer buyer0 = {
+    let buyer0 : buyer = {
         address : buyer0Addr,
         location : "Delhaize",
         object : "Croissant",
         price : 3
     }
 
-    the_best_seller seller0 = {
+    let seller0 : the_best_seller = {
         address : seller0Addr,
         location : "La Provencale",
         object : "Croissant",
