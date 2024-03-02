@@ -65,7 +65,7 @@ const linearSearch = (lst: list<contract>, val: contract) : option<contract> => 
         when(Some(tlst)) : linearSearch(tlst, val);
         when(None) : None();
     }
-    return tail
+    return tail;
 }
 
 @entry
