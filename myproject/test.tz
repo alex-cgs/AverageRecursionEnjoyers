@@ -1,0 +1,319 @@
+{ parameter
+    (or (unit %fetchChain)
+        (or (pair %closeContract (address %address) (int %id))
+            (or (pair %validateContract (address %address) (int %id))
+                (or (pair %participate
+                       (pair (address %address) (int %id))
+                       (address %address)
+                       (string %location)
+                       (string %object)
+                       (nat %cost))
+                    (pair %openContract
+                       (address %address)
+                       (string %location)
+                       (string %object)
+                       (nat %price)))))) ;
+  storage
+    (map address
+         (pair (map int
+                    (pair (pair %buyer (address %address) (string %location) (string %object) (nat %price))
+                          (option %seller
+                             (pair (address %address) (string %location) (string %object) (nat %cost)))
+                          (option %contract_deadline timestamp)
+                          (option %transport_deadline timestamp)
+                          (option %transport_contract
+                             (pair (address %buyer_address)
+                                   (string %origin)
+                                   (string %destination)
+                                   (timestamp %contract_deadline)
+                                   (timestamp %transport_deadline)
+                                   (address %winner_address)
+                                   (int %winner_price)
+                                   (int %order_id)))
+                          (bool %buyerApproved)
+                          (bool %salesApproved)))
+               int)) ;
+  code { LAMBDA
+           (pair (pair address int)
+                 (map address
+                      (pair (map int
+                                 (pair (pair address string string nat)
+                                       (option (pair address string string nat))
+                                       (option timestamp)
+                                       (option timestamp)
+                                       (option (pair address string string timestamp timestamp address int int))
+                                       bool
+                                       bool))
+                            int)))
+           (pair (pair address string string nat)
+                 (option (pair address string string nat))
+                 (option timestamp)
+                 (option timestamp)
+                 (option (pair address string string timestamp timestamp address int int))
+                 bool
+                 bool)
+           { UNPAIR ;
+             SWAP ;
+             DUP 2 ;
+             CAR ;
+             GET ;
+             IF_NONE { PUSH string "user does not have a contract" ; FAILWITH } {} ;
+             CAR ;
+             SWAP ;
+             CDR ;
+             GET ;
+             IF_NONE
+               { PUSH string "user does not have the requested contract" ; FAILWITH }
+               {} } ;
+         LAMBDA
+           (pair (pair (pair address string string nat)
+                       (option (pair address string string nat))
+                       (option timestamp)
+                       (option timestamp)
+                       (option (pair address string string timestamp timestamp address int int))
+                       bool
+                       bool)
+                 (pair address int)
+                 (map address
+                      (pair (map int
+                                 (pair (pair address string string nat)
+                                       (option (pair address string string nat))
+                                       (option timestamp)
+                                       (option timestamp)
+                                       (option (pair address string string timestamp timestamp address int int))
+                                       bool
+                                       bool))
+                            int)))
+           (map address
+                (pair (map int
+                           (pair (pair address string string nat)
+                                 (option (pair address string string nat))
+                                 (option timestamp)
+                                 (option timestamp)
+                                 (option (pair address string string timestamp timestamp address int int))
+                                 bool
+                                 bool))
+                      int))
+           { UNPAIR 3 ;
+             DUP 3 ;
+             DUP 3 ;
+             CAR ;
+             GET ;
+             IF_NONE { PUSH string "user does not have a contract" ; FAILWITH } {} ;
+             DIG 3 ;
+             DUP 2 ;
+             CDR ;
+             DIG 2 ;
+             CAR ;
+             DIG 3 ;
+             SOME ;
+             DUP 5 ;
+             CDR ;
+             UPDATE ;
+             PAIR ;
+             SOME ;
+             DIG 2 ;
+             CAR ;
+             UPDATE } ;
+         DIG 2 ;
+         UNPAIR ;
+         IF_LEFT
+           { DIG 2 ; DIG 3 ; DROP 3 }
+           { IF_LEFT
+               { DIG 2 ;
+                 DROP ;
+                 SENDER ;
+                 DUP 3 ;
+                 DIG 2 ;
+                 PAIR ;
+                 DIG 3 ;
+                 SWAP ;
+                 EXEC ;
+                 DUP ;
+                 CAR ;
+                 CAR ;
+                 DIG 2 ;
+                 COMPARE ;
+                 NEQ ;
+                 IF { PUSH string "Not owner of Contract" ; FAILWITH } {} ;
+                 DUP ;
+                 GET 12 ;
+                 DUP 2 ;
+                 GET 11 ;
+                 AND ;
+                 IF { SWAP ;
+                      NONE (pair (map int
+                                      (pair (pair address string string nat)
+                                            (option (pair address string string nat))
+                                            (option timestamp)
+                                            (option timestamp)
+                                            (option (pair address string string timestamp timestamp address int int))
+                                            bool
+                                            bool))
+                                 int) ;
+                      DIG 2 ;
+                      CAR ;
+                      CAR ;
+                      UPDATE }
+                    { DROP } }
+               { IF_LEFT
+                   { SENDER ;
+                     DUP 3 ;
+                     DUP 3 ;
+                     PAIR ;
+                     DIG 5 ;
+                     SWAP ;
+                     EXEC ;
+                     DUP ;
+                     DUP 4 ;
+                     CAR ;
+                     DUP 4 ;
+                     COMPARE ;
+                     EQ ;
+                     IF { DIG 2 ;
+                          DROP 2 ;
+                          PUSH bool False ;
+                          PUSH bool True ;
+                          DUP 3 ;
+                          GET 9 ;
+                          DUP 4 ;
+                          GET 7 ;
+                          DUP 5 ;
+                          GET 5 ;
+                          DUP 6 ;
+                          GET 3 ;
+                          DIG 6 ;
+                          CAR ;
+                          PAIR 7 }
+                        { PUSH bool True ;
+                          DUP 3 ;
+                          GET 11 ;
+                          COMPARE ;
+                          EQ ;
+                          IF { DUP 2 ;
+                               GET 3 ;
+                               IF_NONE { PUSH string "No seller determined" ; FAILWITH } {} ;
+                               DIG 3 ;
+                               SWAP ;
+                               CAR ;
+                               COMPARE ;
+                               EQ ;
+                               IF { DROP ;
+                                    PUSH bool True ;
+                                    PUSH bool True ;
+                                    DUP 3 ;
+                                    GET 9 ;
+                                    DUP 4 ;
+                                    GET 7 ;
+                                    DUP 5 ;
+                                    GET 5 ;
+                                    DUP 6 ;
+                                    GET 3 ;
+                                    DIG 6 ;
+                                    CAR ;
+                                    PAIR 7 }
+                                  { SWAP ; DROP } }
+                             { SWAP ;
+                               DIG 2 ;
+                               DROP 2 ;
+                               PUSH string "No permission to access contract" ;
+                               FAILWITH } } ;
+                     PAIR 3 ;
+                     EXEC }
+                   { IF_LEFT
+                       { UNPAIR ;
+                         DUP 3 ;
+                         DUP 2 ;
+                         PAIR ;
+                         DIG 5 ;
+                         SWAP ;
+                         EXEC ;
+                         SENDER ;
+                         DUP 4 ;
+                         CAR ;
+                         SWAP ;
+                         COMPARE ;
+                         NEQ ;
+                         IF { PUSH string "Indicared seller is not seller" ; FAILWITH } {} ;
+                         DUP 3 ;
+                         CAR ;
+                         DUP 3 ;
+                         CAR ;
+                         COMPARE ;
+                         EQ ;
+                         IF { PUSH string "Cannot participate on own contract." ; FAILWITH } {} ;
+                         DUP 3 ;
+                         GET 5 ;
+                         DUP 2 ;
+                         CAR ;
+                         GET 5 ;
+                         COMPARE ;
+                         NEQ ;
+                         IF { PUSH string "Seller does not provide requested good." ; FAILWITH } {} ;
+                         DIG 3 ;
+                         DIG 2 ;
+                         PUSH bool False ;
+                         PUSH bool False ;
+                         DUP 5 ;
+                         GET 9 ;
+                         DUP 6 ;
+                         GET 7 ;
+                         DUP 7 ;
+                         GET 5 ;
+                         DIG 8 ;
+                         SOME ;
+                         DIG 8 ;
+                         CAR ;
+                         PAIR 7 ;
+                         PAIR 3 ;
+                         EXEC }
+                       { DIG 2 ;
+                         DIG 3 ;
+                         DROP 2 ;
+                         SENDER ;
+                         DUP 3 ;
+                         SWAP ;
+                         GET ;
+                         IF_NONE
+                           { PUSH int 0 ;
+                             EMPTY_MAP
+                               int
+                               (pair (pair address string string nat)
+                                     (option (pair address string string nat))
+                                     (option timestamp)
+                                     (option timestamp)
+                                     (option (pair address string string timestamp timestamp address int int))
+                                     bool
+                                     bool) ;
+                             PAIR }
+                           {} ;
+                         PUSH int 1 ;
+                         DUP 2 ;
+                         CDR ;
+                         ADD ;
+                         DUP 2 ;
+                         CAR ;
+                         PUSH bool False ;
+                         PUSH bool False ;
+                         NONE (pair address string string timestamp timestamp address int int) ;
+                         NONE timestamp ;
+                         NONE timestamp ;
+                         NONE (pair address string string nat) ;
+                         DUP 10 ;
+                         PAIR 7 ;
+                         DIG 3 ;
+                         CDR ;
+                         DUG 2 ;
+                         SOME ;
+                         DIG 2 ;
+                         UPDATE ;
+                         PAIR ;
+                         DIG 2 ;
+                         SWAP ;
+                         SOME ;
+                         DIG 2 ;
+                         CAR ;
+                         UPDATE } } } } ;
+         NIL operation ;
+         PAIR } }
+

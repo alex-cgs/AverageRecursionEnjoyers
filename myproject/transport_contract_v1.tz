@@ -1,0 +1,138 @@
+{ parameter
+    (or (pair %participate
+           (address %buyer_address)
+           (string %origin)
+           (string %destination)
+           (timestamp %contract_deadline)
+           (timestamp %transport_deadline)
+           (address %winner_address)
+           (int %winner_price)
+           (int %order_id))
+        (or (int %getTheOrderData)
+            (or (int %closeContract)
+                (pair %createContract
+                   (address %buyer_address)
+                   (string %origin)
+                   (string %destination)
+                   (timestamp %contract_deadline)
+                   (timestamp %transport_deadline)
+                   (address %winner_address)
+                   (int %winner_price)
+                   (int %order_id))))) ;
+  storage
+    (pair (map int
+               (pair (address %buyer_address)
+                     (string %origin)
+                     (string %destination)
+                     (timestamp %contract_deadline)
+                     (timestamp %transport_deadline)
+                     (address %winner_address)
+                     (int %winner_price)
+                     (int %order_id)))
+          int) ;
+  code { UNPAIR ;
+         IF_LEFT
+           { DUP 2 ;
+             CAR ;
+             DUP 2 ;
+             GET 14 ;
+             MEM ;
+             NOT ;
+             IF { PUSH string "No such order" ; FAILWITH } {} ;
+             DUP 2 ;
+             CAR ;
+             DUP 2 ;
+             GET 14 ;
+             GET ;
+             IF_NONE { PUSH string "No order" ; FAILWITH } {} ;
+             GET 13 ;
+             DUP ;
+             DUP 3 ;
+             GET 13 ;
+             COMPARE ;
+             LT ;
+             PUSH int -1 ;
+             DIG 2 ;
+             COMPARE ;
+             EQ ;
+             OR ;
+             IF { DUP 2 ;
+                  CAR ;
+                  DUP 2 ;
+                  GET 14 ;
+                  GET ;
+                  IF_NONE
+                    { DROP ; PUSH string "System of a down" ; FAILWITH }
+                    { DUP 3 ;
+                      CAR ;
+                      DUP 3 ;
+                      GET 14 ;
+                      DUP 4 ;
+                      GET 13 ;
+                      DUP 5 ;
+                      GET 11 ;
+                      DUP 5 ;
+                      GET 9 ;
+                      DUP 6 ;
+                      GET 7 ;
+                      DUP 7 ;
+                      GET 5 ;
+                      DUP 8 ;
+                      GET 3 ;
+                      DIG 8 ;
+                      CAR ;
+                      PAIR 8 ;
+                      SOME ;
+                      DIG 2 ;
+                      GET 14 ;
+                      UPDATE } ;
+                  SWAP ;
+                  CDR ;
+                  SWAP ;
+                  PAIR }
+                { DROP } }
+           { IF_LEFT
+               { DROP }
+               { IF_LEFT
+                   { DUP 2 ;
+                     CAR ;
+                     DUP 2 ;
+                     MEM ;
+                     NOT ;
+                     IF { PUSH string "Access deny" ; FAILWITH } {} ;
+                     DUP 2 ;
+                     CDR ;
+                     DIG 2 ;
+                     CAR ;
+                     NONE (pair address string string timestamp timestamp address int int) ;
+                     DIG 3 ;
+                     UPDATE }
+                   { PUSH int 1 ;
+                     DUP 3 ;
+                     CDR ;
+                     ADD ;
+                     DUP ;
+                     PUSH int -1 ;
+                     SENDER ;
+                     DUP 5 ;
+                     GET 9 ;
+                     DUP 6 ;
+                     GET 7 ;
+                     DUP 7 ;
+                     GET 5 ;
+                     DIG 7 ;
+                     GET 3 ;
+                     SENDER ;
+                     PAIR 8 ;
+                     DIG 2 ;
+                     CAR ;
+                     SWAP ;
+                     DUP 3 ;
+                     DUG 2 ;
+                     SOME ;
+                     DIG 2 ;
+                     UPDATE } ;
+                 PAIR } } ;
+         NIL operation ;
+         PAIR } }
+
